@@ -309,7 +309,7 @@ export default function Command() {
             <List.Item
               key={db.id}
               title={db.name}
-              subtitle={[DB_TYPE_LABELS[db.type], db.lastSyncedAt ? formatLastSynced(db.lastSyncedAt) : "Never synced", isDefault ? "Default" : ""].filter(Boolean).join(" · ")}
+              subtitle={[DB_TYPE_LABELS[db.type], db.lastSyncedAt ? formatLastSynced(db.lastSyncedAt) : "Never synced"].filter(Boolean).join(" · ")}
               accessoryTitle={isDefault ? "Default" : undefined}
               actions={
                 <ActionPanel>

@@ -357,14 +357,6 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                         title={isSelected ? "Remove from Selection" : "Add to Selection"}
                         onAction={() => toggleTableSelection(key)}
                       />
-                      <Action
-                        title="Add schema to selection"
-                        onAction={() => addSchemaToSelection(schema)}
-                      />
-                      <Action
-                        title="Remove schema from selection"
-                        onAction={() => removeSchemaFromSelection(schema)}
-                      />
                       {selectedOrderedKeys.length > 0 && (
                         <>
                           <Action.CopyToClipboard
@@ -376,6 +368,14 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                           <Action title="Clear Selection" onAction={clearSelection} />
                         </>
                       )}
+                      <Action
+                        title="Add schema to selection"
+                        onAction={() => addSchemaToSelection(schema)}
+                      />
+                      <Action
+                        title="Remove schema from selection"
+                        onAction={() => removeSchemaFromSelection(schema)}
+                      />
                       <Action title="Refresh" onAction={refresh} />
                       <Action
                         title="Manage Databases"

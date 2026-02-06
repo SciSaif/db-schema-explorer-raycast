@@ -32,6 +32,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
   const [activeDbId, setActiveDbId] = useState<string | null>(null);
   const [cache, setCache] = useState<SchemaCache | null>(null);
   const [exclusionRules, setExclusionRules] = useState<ExclusionRule[]>([]);
+  const [selectedTableKeys, setSelectedTableKeys] = useState<Set<string>>(new Set());
 
   const loadDataForDb = useCallback(async (dbId: string) => {
     const [cacheData, rules] = await Promise.all([Promise.resolve(readSchemaCache(dbId)), getExclusionRules(dbId)]);
@@ -70,10 +71,22 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
       setActiveDbId(dbId);
       setCache(null);
       setExclusionRules([]);
+      setSelectedTableKeys(new Set());
       loadDataForDb(dbId);
     },
     [loadDataForDb]
   );
+
+  const toggleTableSelection = useCallback((key: string) => {
+    setSelectedTableKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedTableKeys(new Set()), []);
 
   const refresh = useCallback(() => {
     if (activeDbId) {
@@ -88,6 +101,50 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
   const sortedSchemas = useMemo(() => Array.from(bySchema.keys()).sort(), [bySchema]);
   const activeDb = useMemo(() => databases.find((d) => d.id === activeDbId) ?? null, [databases, activeDbId]);
   const showTableNamesOnly = activeDb?.showTableNamesOnly === true;
+
+  const { selectedOrderedKeys, combinedDdl } = useMemo(() => {
+    const ordered: string[] = [];
+    const ddls: string[] = [];
+    for (const schema of sortedSchemas) {
+      const schemaItems = bySchema.get(schema) ?? [];
+      for (const { key, entry } of schemaItems) {
+        if (selectedTableKeys.has(key)) {
+          ordered.push(key);
+          ddls.push(entry.ddl);
+        }
+      }
+    }
+    return {
+      selectedOrderedKeys: ordered,
+      combinedDdl: ddls.join("\n\n"),
+    };
+  }, [bySchema, sortedSchemas, selectedTableKeys]);
+
+  const addAllToSelection = useCallback(() => {
+    setSelectedTableKeys(new Set(items.map((i) => i.key)));
+  }, [items]);
+
+  const addSchemaToSelection = useCallback(
+    (schema: string) => {
+      setSelectedTableKeys((prev) => {
+        const next = new Set(prev);
+        for (const { key } of bySchema.get(schema) ?? []) next.add(key);
+        return next;
+      });
+    },
+    [bySchema]
+  );
+
+  const removeSchemaFromSelection = useCallback(
+    (schema: string) => {
+      setSelectedTableKeys((prev) => {
+        const next = new Set(prev);
+        for (const { key } of bySchema.get(schema) ?? []) next.delete(key);
+        return next;
+      });
+    },
+    [bySchema]
+  );
 
   if (initState === "loading") {
     return (
@@ -231,7 +288,11 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
     return (
       <List
         isShowingDetail
-        searchBarPlaceholder="Search tables..."
+        searchBarPlaceholder={
+          selectedOrderedKeys.length > 0
+            ? `Search tables… (${selectedOrderedKeys.length} selected)`
+            : "Search tables..."
+        }
         searchBarAccessory={
           databases.length > 1 ? (
             <List.Dropdown
@@ -248,6 +309,16 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         filtering={true}
         actions={
           <ActionPanel>
+            {selectedOrderedKeys.length > 0 && (
+              <>
+                <Action.CopyToClipboard
+                  title={`Copy Combined DDL (${selectedOrderedKeys.length} tables)`}
+                  content={combinedDdl}
+                />
+                <Action title="Clear Selection" onAction={clearSelection} />
+              </>
+            )}
+            <Action title="Add All to Selection" onAction={addAllToSelection} />
             <Action title="Refresh" onAction={refresh} />
             <Action
               title="Manage Databases"
@@ -265,15 +336,38 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
             {(bySchema.get(schema) ?? []).map(({ key, entry }) => {
               const displayTitle =
                 showTableNamesOnly && key.includes(".") ? key.split(".").slice(1).join(".") : key;
+              const isSelected = selectedTableKeys.has(key);
               const markdown = `\`\`\`sql\n${entry.ddl}\n\`\`\``;
               return (
                 <List.Item
                   key={key}
                   title={displayTitle}
+                  accessoryTitle={isSelected ? "✓ Selected" : undefined}
                   detail={<List.Item.Detail markdown={markdown} />}
                   actions={
                     <ActionPanel>
                       <Action.CopyToClipboard title="Copy DDL" content={entry.ddl} />
+                      <Action
+                        title={isSelected ? "Remove from Selection" : "Add to Selection"}
+                        onAction={() => toggleTableSelection(key)}
+                      />
+                      <Action
+                        title="Add schema to selection"
+                        onAction={() => addSchemaToSelection(schema)}
+                      />
+                      <Action
+                        title="Remove schema from selection"
+                        onAction={() => removeSchemaFromSelection(schema)}
+                      />
+                      {selectedOrderedKeys.length > 0 && (
+                        <>
+                          <Action.CopyToClipboard
+                            title={`Copy Combined DDL (${selectedOrderedKeys.length} tables)`}
+                            content={combinedDdl}
+                          />
+                          <Action title="Clear Selection" onAction={clearSelection} />
+                        </>
+                      )}
                       <Action title="Refresh" onAction={refresh} />
                       <Action
                         title="Manage Databases"

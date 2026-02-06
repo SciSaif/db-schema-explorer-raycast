@@ -24,7 +24,7 @@ import { syncDatabaseSchema } from "./lib/sync-one";
 
 type ViewMode = "list" | "detail" | "addForm" | "editCredentialsForm" | "addRuleForm";
 
-const DB_TYPE_LABELS: Record<DatabaseType, string> = { postgres: "Postgres" };
+const DB_TYPE_LABELS: Record<DatabaseType, string> = { postgres: "Postgres", mongodb: "MongoDB" };
 
 function maskConnectionString(conn: string): string {
   if (!conn) return "(not set)";
@@ -101,11 +101,12 @@ export default function Command() {
         <Form.TextField id="name" title="Name" placeholder="My Database" defaultValue="My Database" />
         <Form.Dropdown id="dbType" title="Database type">
           <Form.Dropdown.Item value="postgres" title="Postgres" />
+          <Form.Dropdown.Item value="mongodb" title="MongoDB" />
         </Form.Dropdown>
         <Form.PasswordField
           id="connectionString"
           title="Connection string"
-          placeholder="postgresql://user:password@host:5432/database"
+          placeholder="postgresql://user:password@host:5432/database or mongodb://localhost:27017/dbname"
         />
       </Form>
     );
@@ -138,7 +139,7 @@ export default function Command() {
         <Form.PasswordField
           id="connectionString"
           title="Connection string"
-          placeholder="postgresql://user:password@host:5432/database"
+          placeholder={selectedDb.type === "mongodb" ? "mongodb://localhost:27017/dbname or mongodb+srv://..." : "postgresql://user:password@host:5432/database"}
           defaultValue={selectedDb.connectionString}
         />
       </Form>

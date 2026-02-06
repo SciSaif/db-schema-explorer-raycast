@@ -66,10 +66,17 @@ export default function Command() {
     }
   };
 
+  const syncDescription =
+    state === "syncing" && selectedDb
+      ? selectedDb.type === "mongodb"
+        ? "Fetching collections from MongoDB"
+        : "Fetching tables and views from Postgres"
+      : "Loading…";
+
   if (state === "loading" || state === "syncing") {
     return (
       <List isLoading={true}>
-        <List.EmptyView title={state === "syncing" ? "Syncing schema…" : "Loading…"} description="Fetching tables and views from Postgres" />
+        <List.EmptyView title={state === "syncing" ? "Syncing schema…" : "Loading…"} description={syncDescription} />
       </List>
     );
   }

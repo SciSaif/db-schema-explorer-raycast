@@ -6,7 +6,7 @@ import { getLegacyCachePath } from "./cache";
 const REGISTRY_FILENAME = "registry.json";
 const LEGACY_STORAGE_KEY_CONNECTION = "connectionString";
 
-export type DatabaseType = "postgres";
+export type DatabaseType = "postgres" | "mongodb";
 
 export type StoredDatabase = {
   id: string;

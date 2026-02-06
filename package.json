@@ -20,7 +20,7 @@
     {
       "name": "sync-schema",
       "title": "Sync Schema",
-      "description": "Fetch schema from Postgres and update local cache",
+      "description": "Fetch schema from database (Postgres or MongoDB) and update local cache",
       "mode": "view"
     },
     {
@@ -42,6 +42,7 @@
   "dependencies": {
     "@raycast/api": "^1.104.4",
     "@raycast/utils": "^1.17.0",
+    "mongodb": "^6.12.0",
     "pg": "^8.13.0"
   },
   "devDependencies": {

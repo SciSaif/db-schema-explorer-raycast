@@ -6,113 +6,90 @@ import {
   Toast,
   launchCommand,
   LaunchType,
-  openExtensionPreferences,
 } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { Client } from "pg";
-import { getConnectionString } from "./lib/credentials";
-import { parseConnectionConfig } from "./lib/pg-config";
-import { fetchSchemaData } from "./lib/pg-schema";
-import { buildSchemaDdl } from "./lib/ddl-builder";
-import { writeSchemaCache, type SchemaCache, type TableCacheEntry } from "./lib/cache";
+import { getDatabases, type StoredDatabase } from "./lib/databases";
+import { syncDatabaseSchema } from "./lib/sync-one";
 
-type SyncState = "checking" | "no-credentials" | "loading" | "success" | "error";
+type SyncState = "loading" | "no-databases" | "picking" | "syncing" | "success" | "error";
 
 export default function Command() {
-  const [state, setState] = useState<SyncState>("checking");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [state, setState] = useState<SyncState>("loading");
+  const [databases, setDatabases] = useState<StoredDatabase[]>([]);
+  const [selectedDb, setSelectedDb] = useState<StoredDatabase | null>(null);
   const [tableCount, setTableCount] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-
     (async () => {
-      const conn = await getConnectionString();
+      const list = await getDatabases();
       if (cancelled) return;
-      if (!conn) {
-        setState("no-credentials");
-        launchCommand({ name: "set-credentials", type: LaunchType.UserInitiated });
+      setDatabases(list);
+      if (list.length === 0) {
+        setState("no-databases");
         return;
       }
-
-      setState("loading");
-
-      (async () => {
-        const client = new Client(parseConnectionConfig(conn));
-        try {
-          await client.connect();
-          if (cancelled) return;
-          const data = await fetchSchemaData(client);
-          if (cancelled) return;
-          const { tableDdls, tableTypes } = buildSchemaDdl(data);
-          const tables: Record<string, TableCacheEntry> = {};
-          for (const [key, ddl] of tableDdls) {
-            const [schema] = key.split(".");
-            tables[key] = {
-              ddl,
-              schema: schema ?? undefined,
-              type: tableTypes.get(key) ?? "table",
-            };
-          }
-          const cache: SchemaCache = { tables };
-          writeSchemaCache(cache);
-          if (cancelled) return;
-          setTableCount(Object.keys(tables).length);
-          setState("success");
-          await showToast({
-            style: Toast.Style.Success,
-            title: "Schema synced",
-            message: `${Object.keys(tables).length} tables cached`,
-          });
-        } catch (err) {
-          if (cancelled) return;
-          const msg = err instanceof Error ? err.message : String(err);
-          setErrorMessage(msg);
+      if (list.length === 1) {
+        setSelectedDb(list[0]!);
+        setState("syncing");
+        const result = await syncDatabaseSchema(list[0]!.id);
+        if (cancelled) return;
+        if ("error" in result) {
+          setErrorMessage(result.error);
           setState("error");
-          await showToast({
-            style: Toast.Style.Failure,
-            title: "Sync failed",
-            message: msg,
-          });
-        } finally {
-          try {
-            await client.end();
-          } catch {
-            // ignore
-          }
+          await showToast({ style: Toast.Style.Failure, title: "Sync failed", message: result.error });
+        } else {
+          setTableCount(result.tableCount);
+          setState("success");
+          await showToast({ style: Toast.Style.Success, title: "Schema synced", message: `${result.tableCount} tables cached` });
         }
-      })();
+        return;
+      }
+      setState("picking");
     })();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  if (state === "checking" || state === "no-credentials") {
+  const runSync = async (db: StoredDatabase) => {
+    setSelectedDb(db);
+    setState("syncing");
+    const result = await syncDatabaseSchema(db.id);
+    if ("error" in result) {
+      setErrorMessage(result.error);
+      setState("error");
+      await showToast({ style: Toast.Style.Failure, title: "Sync failed", message: result.error });
+    } else {
+      setTableCount(result.tableCount);
+      setState("success");
+      await showToast({ style: Toast.Style.Success, title: "Schema synced", message: `${result.tableCount} tables cached` });
+    }
+  };
+
+  if (state === "loading" || state === "syncing") {
     return (
-      <List>
-        <List.EmptyView
-          title="Credentials required"
-          description="Run “Set Credentials” to enter your PostgreSQL connection string first."
-          icon="🔌"
-          actions={
-            <ActionPanel>
-              <Action
-                title="Set Credentials"
-                onAction={() => launchCommand({ name: "set-credentials", type: LaunchType.UserInitiated })}
-              />
-            </ActionPanel>
-          }
-        />
+      <List isLoading={true}>
+        <List.EmptyView title={state === "syncing" ? "Syncing schema…" : "Loading…"} description="Fetching tables and views from Postgres" />
       </List>
     );
   }
 
-  if (state === "loading") {
+  if (state === "no-databases") {
     return (
-      <List isLoading={true}>
-        <List.EmptyView title="Syncing schema…" description="Fetching tables and views from Postgres" />
+      <List>
+        <List.EmptyView
+          title="No databases"
+          description="Add a database in Manage Databases first."
+          icon="🔌"
+          actions={
+            <ActionPanel>
+              <Action
+                title="Manage Databases"
+                onAction={() => launchCommand({ name: "manage-databases", type: LaunchType.UserInitiated })}
+              />
+            </ActionPanel>
+          }
+        />
       </List>
     );
   }
@@ -127,10 +104,42 @@ export default function Command() {
           actions={
             <ActionPanel>
               <Action
-                title="Set Credentials"
-                onAction={() => launchCommand({ name: "set-credentials", type: LaunchType.UserInitiated })}
+                title="Manage Databases"
+                onAction={() => launchCommand({ name: "manage-databases", type: LaunchType.UserInitiated })}
               />
-              <Action title="Open Extension Preferences" onAction={() => openExtensionPreferences()} />
+              {selectedDb && (
+                <Action title="Retry Sync" onAction={() => runSync(selectedDb)} />
+              )}
+            </ActionPanel>
+          }
+        />
+      </List>
+    );
+  }
+
+  if (state === "success" && selectedDb) {
+    return (
+      <List>
+        <List.Item
+          title="Schema synced"
+          subtitle={`${selectedDb.name}: ${tableCount} tables cached`}
+          icon="✅"
+          actions={
+            <ActionPanel>
+              <Action
+                title="Explore Tables"
+                onAction={() =>
+                  launchCommand({
+                    name: "explore-tables",
+                    type: LaunchType.UserInitiated,
+                    context: { databaseId: selectedDb.id },
+                  })
+                }
+              />
+              <Action
+                title="Manage Databases"
+                onAction={() => launchCommand({ name: "manage-databases", type: LaunchType.UserInitiated })}
+              />
             </ActionPanel>
           }
         />
@@ -139,24 +148,33 @@ export default function Command() {
   }
 
   return (
-    <List>
-      <List.Item
-        title="Schema synced"
-        subtitle={`${tableCount} tables cached`}
-        icon="✅"
-        actions={
-          <ActionPanel>
-            <Action
-              title="Explore Tables"
-              onAction={() => launchCommand({ name: "explore-tables", type: LaunchType.UserInitiated })}
-            />
-            <Action
-              title="Exclude Tables"
-              onAction={() => launchCommand({ name: "exclude-tables", type: LaunchType.UserInitiated })}
-            />
-          </ActionPanel>
-        }
-      />
+    <List
+      searchBarPlaceholder="Pick a database to sync..."
+      actions={
+        <ActionPanel>
+          <Action
+            title="Manage Databases"
+            onAction={() => launchCommand({ name: "manage-databases", type: LaunchType.UserInitiated })}
+          />
+        </ActionPanel>
+      }
+    >
+      {databases.map((db) => (
+        <List.Item
+          key={db.id}
+          title={db.name}
+          subtitle={db.lastSyncedAt ? `Last synced: ${new Date(db.lastSyncedAt).toLocaleString()}` : "Never synced"}
+          actions={
+            <ActionPanel>
+              <Action title="Sync This Database" onAction={() => runSync(db)} />
+              <Action
+                title="Manage Databases"
+                onAction={() => launchCommand({ name: "manage-databases", type: LaunchType.UserInitiated })}
+              />
+            </ActionPanel>
+          }
+        />
+      ))}
     </List>
   );
 }

@@ -12,15 +12,9 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "set-credentials",
-      "title": "Set Credentials",
-      "description": "Enter PostgreSQL connection string (required before Sync or Explore)",
-      "mode": "view"
-    },
-    {
-      "name": "explore-tables",
-      "title": "Explore Tables",
-      "description": "Search and copy table DDL from cached schema",
+      "name": "manage-databases",
+      "title": "Manage Databases",
+      "description": "Add and manage database connections, credentials, and exclusion rules",
       "mode": "view"
     },
     {
@@ -30,9 +24,9 @@
       "mode": "view"
     },
     {
-      "name": "exclude-tables",
-      "title": "Exclude Tables",
-      "description": "Configure which tables to hide in Explore Tables",
+      "name": "explore-tables",
+      "title": "Explore Tables",
+      "description": "Search and copy table DDL from cached schema",
       "mode": "view"
     }
   ],

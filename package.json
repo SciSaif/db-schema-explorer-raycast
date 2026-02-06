@@ -1,0 +1,71 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "sql-schema-explorer",
+  "title": "Sql Schema Explorer",
+  "description": "get schema of all the tables in your database",
+  "icon": "extension-icon.png",
+  "author": "scisaif",
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "set-credentials",
+      "title": "Set Credentials",
+      "description": "Enter PostgreSQL connection string (required before Sync or Explore)",
+      "mode": "view"
+    },
+    {
+      "name": "explore-tables",
+      "title": "Explore Tables",
+      "description": "Search and copy table DDL from cached schema",
+      "mode": "view"
+    },
+    {
+      "name": "sync-schema",
+      "title": "Sync Schema",
+      "description": "Fetch schema from Postgres and update local cache",
+      "mode": "view"
+    },
+    {
+      "name": "exclude-tables",
+      "title": "Exclude Tables",
+      "description": "Configure which tables to hide in Explore Tables",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "connectionString",
+      "type": "password",
+      "required": false,
+      "title": "Connection String",
+      "description": "PostgreSQL connection string (e.g. postgresql://user:password@host:5432/database)"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.104.4",
+    "@raycast/utils": "^1.17.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

@@ -1,0 +1,49 @@
+# Project: Raycast DB-to-AI Schema Context
+
+### **The Core Problem**
+
+When prompting AI for database-related tasks, developers manually hunt for table definitions in tools like TablePlus or DBeaver. This context-gathering is slow, and "Copy as SQL" from GUI tools is often buried in menus or contains unnecessary bloat for LLMs.
+
+### **The Solution**
+
+A high-performance Raycast extension that acts as a **local, searchable dictionary** of your Postgres schema, optimized specifically for feeding context to AI models.
+
+---
+
+### **Key Features**
+
+- **Instant Local Cache:** Instead of querying the database on every keystore (which is slow), the extension stores the schema in a local **JSON file**. This makes searching for tables feel "zero-latency."
+- **One-Command Sync:** A "Sync Schema" command that connects to Postgres, fetches the latest metadata (tables, columns, types, relations, enums, indices), and updates the local cache.
+- **Dual-Pane Interface:**
+    - **Left Side:** A searchable list of all tables and views.
+    - **Right Side:** A Markdown preview showing the exact `CREATE TABLE` DDL for the selected item.
+- **AI-Optimized Output:** The copied SQL is formatted for token efficiency and includes helpful comments regarding foreign key relationships and custom Enums.
+- **Fast Action:** Hitting `Enter` instantly copies the full DDL to the clipboard.
+
+---
+
+### **Technical Architecture**
+
+| **Layer** | **Implementation** |
+| --- | --- |
+| **Data Source** | PostgreSQL (Information Schema & `pg_catalog`). |
+| **Storage Format** | **Structured JSON** (Key: Table Name; Value: SQL String + Metadata). |
+| **Storage Location** | Raycast `supportPath` (Local filesystem). |
+| **Frontend** | Raycast `List` and `Detail` components (React/TypeScript). |
+| **Output Format** | Clean, standard SQL DDL (Standard `CREATE TABLE` syntax). |
+
+---
+
+### **Unique Selling Points (USP)**
+
+1. **Speed:** Faster than opening a DB client; strictly focused on *retrieval*, not *management*.
+2. **Context Precision:** Unlike general DB tools, this can be tweaked to include/exclude specific metadata (like dropping verbose `GRANT` statements) to save AI tokens.
+3. **Local Privacy:** No schema data leaves your machine except for what you manually paste into your AI of choice.
+
+---
+
+### **Future Roadmap Ideas**
+
+- **Multi-Select:** Select 3-4 tables at once and copy a combined "context block."
+- **Format Toggling:** Switch between SQL DDL, Prisma Schema, or TypeScript Interfaces.
+- **Diagram Support:** Use a library to generate Mermaid.js ERD strings for the selected tables.

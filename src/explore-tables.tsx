@@ -262,13 +262,11 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         {sortedSchemas.map((schema) => (
           <List.Section key={schema} title={schema}>
             {(bySchema.get(schema) ?? []).map(({ key, entry }) => {
-              const subtitle = entry.type === "view" ? "View" : "Table";
               const markdown = `\`\`\`sql\n${entry.ddl}\n\`\`\``;
               return (
                 <List.Item
                   key={key}
                   title={key}
-                  subtitle={subtitle}
                   detail={<List.Item.Detail markdown={markdown} />}
                   actions={
                     <ActionPanel>

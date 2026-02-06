@@ -208,6 +208,7 @@ export default function Command() {
           <Detail.Metadata>
             <Detail.Metadata.Label title="Type" text={DB_TYPE_LABELS[selectedDb.type]} />
             <Detail.Metadata.Label title="Last synced" text={formatLastSynced(selectedDb.lastSyncedAt)} />
+            <Detail.Metadata.Label title="Show table names only" text={selectedDb.showTableNamesOnly ? "Yes" : "No"} />
             {isDefault && <Detail.Metadata.Label title="Default" text="Yes" />}
             {syncing && <Detail.Metadata.Label title="Status" text="Syncing schema…" />}
           </Detail.Metadata>
@@ -215,6 +216,19 @@ export default function Command() {
         actions={
           <ActionPanel>
             <Action title="Back to List" onAction={() => { setMode("list"); setSelectedDb(null); }} />
+            <Action
+              title={selectedDb.showTableNamesOnly ? "Show Full Names (schema.table)" : "Show Table Names Only"}
+              onAction={async () => {
+                const next = !selectedDb.showTableNamesOnly;
+                await updateDatabase(selectedDb.id, { showTableNamesOnly: next });
+                setSelectedDb((prev) => (prev ? { ...prev, showTableNamesOnly: next } : null));
+                await showToast({
+                  style: Toast.Style.Success,
+                  title: next ? "Table names only" : "Full names",
+                  message: next ? "Explore Tables will show e.g. YT_CHANNELS" : "Explore Tables will show e.g. public.YT_CHANNELS",
+                });
+              }}
+            />
             <Action
               title="Edit Credentials"
               onAction={() => setMode("editCredentialsForm")}

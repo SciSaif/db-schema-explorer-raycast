@@ -15,6 +15,8 @@ export type StoredDatabase = {
   connectionString: string;
   lastSyncedAt?: string;
   isDefault?: boolean;
+  /** When true, Explore Tables shows only table names (e.g. YT_CHANNELS) instead of schema.table (e.g. public.YT_CHANNELS). Default false. */
+  showTableNamesOnly?: boolean;
 };
 
 export type DatabaseRegistry = {

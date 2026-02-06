@@ -87,6 +87,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
   const bySchema = useMemo(() => groupBySchema(items), [items]);
   const sortedSchemas = useMemo(() => Array.from(bySchema.keys()).sort(), [bySchema]);
   const activeDb = useMemo(() => databases.find((d) => d.id === activeDbId) ?? null, [databases, activeDbId]);
+  const showTableNamesOnly = activeDb?.showTableNamesOnly === true;
 
   if (initState === "loading") {
     return (
@@ -262,11 +263,13 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         {sortedSchemas.map((schema) => (
           <List.Section key={schema} title={schema}>
             {(bySchema.get(schema) ?? []).map(({ key, entry }) => {
+              const displayTitle =
+                showTableNamesOnly && key.includes(".") ? key.split(".").slice(1).join(".") : key;
               const markdown = `\`\`\`sql\n${entry.ddl}\n\`\`\``;
               return (
                 <List.Item
                   key={key}
-                  title={key}
+                  title={displayTitle}
                   detail={<List.Item.Detail markdown={markdown} />}
                   actions={
                     <ActionPanel>

@@ -2,8 +2,8 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "db-schema-explorer",
   "title": "DB Schema Explorer",
-  "description": "Get schemas of tables in your database for reference and context for AI",
-  "icon": "extension-icon.png",
+  "description": "Get database schema (tables, columns, relations) from PostgreSQL and MongoDB for AI reference and context",
+  "icon": "extension_icon.png",
   "author": "scisaif",
   "platforms": [
     "macOS",

@@ -1,4 +1,4 @@
-import { Action, ActionPanel, List, launchCommand, LaunchType, type LaunchProps } from "@raycast/api";
+import { Action, ActionPanel, Keyboard, List, launchCommand, LaunchType, type LaunchProps } from "@raycast/api";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getDatabases, getDefaultDatabase, type StoredDatabase } from "./lib/databases";
 import { readSchemaCache, type SchemaCache, type TableCacheEntry } from "./lib/cache";
@@ -314,6 +314,8 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                 <Action.CopyToClipboard
                   title={`Copy Combined DDL (${selectedOrderedKeys.length} tables)`}
                   content={combinedDdl}
+                  shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
+                  onCopy={clearSelection}
                 />
                 <Action title="Clear Selection" onAction={clearSelection} />
               </>
@@ -346,7 +348,11 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                   detail={<List.Item.Detail markdown={markdown} />}
                   actions={
                     <ActionPanel>
-                      <Action.CopyToClipboard title="Copy DDL" content={entry.ddl} />
+                      <Action.CopyToClipboard
+                        title="Copy DDL"
+                        content={entry.ddl}
+                        shortcut={Keyboard.Shortcut.Copy}
+                      />
                       <Action
                         title={isSelected ? "Remove from Selection" : "Add to Selection"}
                         onAction={() => toggleTableSelection(key)}
@@ -364,6 +370,8 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                           <Action.CopyToClipboard
                             title={`Copy Combined DDL (${selectedOrderedKeys.length} tables)`}
                             content={combinedDdl}
+                            shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
+                            onCopy={clearSelection}
                           />
                           <Action title="Clear Selection" onAction={clearSelection} />
                         </>

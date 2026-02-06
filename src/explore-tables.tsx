@@ -63,7 +63,9 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         setInitState("picking");
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [loadDataForDb, launchDbId]);
 
   const onDatabaseChange = useCallback(
@@ -74,7 +76,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
       setSelectedTableKeys(new Set());
       loadDataForDb(dbId);
     },
-    [loadDataForDb]
+    [loadDataForDb],
   );
 
   const toggleTableSelection = useCallback((key: string) => {
@@ -132,7 +134,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         return next;
       });
     },
-    [bySchema]
+    [bySchema],
   );
 
   const removeSchemaFromSelection = useCallback(
@@ -143,7 +145,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         return next;
       });
     },
-    [bySchema]
+    [bySchema],
   );
 
   if (initState === "loading") {
@@ -295,11 +297,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         }
         searchBarAccessory={
           databases.length > 1 ? (
-            <List.Dropdown
-              tooltip="Database"
-              value={activeDbId ?? ""}
-              onChange={onDatabaseChange}
-            >
+            <List.Dropdown tooltip="Database" value={activeDbId ?? ""} onChange={onDatabaseChange}>
               {databases.map((db) => (
                 <List.Dropdown.Item key={db.id} title={db.name} value={db.id} />
               ))}
@@ -312,7 +310,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
             {selectedOrderedKeys.length > 0 && (
               <>
                 <Action.CopyToClipboard
-                  title={`Copy Combined DDL (${selectedOrderedKeys.length} tables)`}
+                  title={`Copy Combined DDL (${selectedOrderedKeys.length} Tables)`}
                   content={combinedDdl}
                   shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
                   onCopy={clearSelection}
@@ -336,8 +334,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         {sortedSchemas.map((schema) => (
           <List.Section key={schema} title={schema}>
             {(bySchema.get(schema) ?? []).map(({ key, entry }) => {
-              const displayTitle =
-                showTableNamesOnly && key.includes(".") ? key.split(".").slice(1).join(".") : key;
+              const displayTitle = showTableNamesOnly && key.includes(".") ? key.split(".").slice(1).join(".") : key;
               const isSelected = selectedTableKeys.has(key);
               const markdown = `\`\`\`sql\n${entry.ddl}\n\`\`\``;
               return (
@@ -348,11 +345,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                   detail={<List.Item.Detail markdown={markdown} />}
                   actions={
                     <ActionPanel>
-                      <Action.CopyToClipboard
-                        title="Copy DDL"
-                        content={entry.ddl}
-                        shortcut={Keyboard.Shortcut.Copy}
-                      />
+                      <Action.CopyToClipboard title="Copy DDL" content={entry.ddl} shortcut={Keyboard.Shortcut.Copy} />
                       <Action
                         title={isSelected ? "Remove from Selection" : "Add to Selection"}
                         onAction={() => toggleTableSelection(key)}
@@ -360,7 +353,7 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                       {selectedOrderedKeys.length > 0 && (
                         <>
                           <Action.CopyToClipboard
-                            title={`Copy Combined DDL (${selectedOrderedKeys.length} tables)`}
+                            title={`Copy Combined DDL (${selectedOrderedKeys.length} Tables)`}
                             content={combinedDdl}
                             shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
                             onCopy={clearSelection}
@@ -368,14 +361,8 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                           <Action title="Clear Selection" onAction={clearSelection} />
                         </>
                       )}
-                      <Action
-                        title="Add schema to selection"
-                        onAction={() => addSchemaToSelection(schema)}
-                      />
-                      <Action
-                        title="Remove schema from selection"
-                        onAction={() => removeSchemaFromSelection(schema)}
-                      />
+                      <Action title="Add Schema to Selection" onAction={() => addSchemaToSelection(schema)} />
+                      <Action title="Remove Schema from Selection" onAction={() => removeSchemaFromSelection(schema)} />
                       <Action title="Refresh" onAction={refresh} />
                       <Action
                         title="Manage Databases"

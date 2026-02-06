@@ -1,14 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  Detail,
-  Form,
-  launchCommand,
-  LaunchType,
-  List,
-  showToast,
-  Toast,
-} from "@raycast/api";
+import { Action, ActionPanel, Detail, Form, List, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
 import {
   addDatabase,
@@ -19,7 +9,14 @@ import {
   type StoredDatabase,
   type DatabaseType,
 } from "./lib/databases";
-import { getExclusionRules, addExclusionRule, removeExclusionRule, ruleDescription, type ExclusionRule, type ExclusionRuleType } from "./lib/exclusion";
+import {
+  getExclusionRules,
+  addExclusionRule,
+  removeExclusionRule,
+  ruleDescription,
+  type ExclusionRule,
+  type ExclusionRuleType,
+} from "./lib/exclusion";
 import { syncDatabaseSchema } from "./lib/sync-one";
 
 type ViewMode = "list" | "detail" | "addForm" | "editCredentialsForm" | "addRuleForm";
@@ -139,7 +136,11 @@ export default function Command() {
         <Form.PasswordField
           id="connectionString"
           title="Connection string"
-          placeholder={selectedDb.type === "mongodb" ? "mongodb://localhost:27017/dbname or mongodb+srv://..." : "postgresql://user:password@host:5432/database"}
+          placeholder={
+            selectedDb.type === "mongodb"
+              ? "mongodb://localhost:27017/dbname or mongodb+srv://..."
+              : "postgresql://user:password@host:5432/database"
+          }
           defaultValue={selectedDb.connectionString}
         />
       </Form>
@@ -197,7 +198,12 @@ export default function Command() {
       "## Exclusion rules",
       exclusionRules.length === 0
         ? "_No rules. All tables from this database are shown in Explore Tables._"
-        : exclusionRules.map((r) => `- \`${r.pattern}\` — ${r.type === "regex" ? "regex" : r.type === "contains" ? "contains" : "does not contain"}`).join("\n"),
+        : exclusionRules
+            .map(
+              (r) =>
+                `- \`${r.pattern}\` — ${r.type === "regex" ? "regex" : r.type === "contains" ? "contains" : "does not contain"}`,
+            )
+            .join("\n"),
     ].join("\n");
 
     return (
@@ -216,9 +222,15 @@ export default function Command() {
         }
         actions={
           <ActionPanel>
-            <Action title="Back to List" onAction={() => { setMode("list"); setSelectedDb(null); }} />
             <Action
-              title={selectedDb.showTableNamesOnly ? "Show Full Names (schema.table)" : "Show Table Names Only"}
+              title="Back to List"
+              onAction={() => {
+                setMode("list");
+                setSelectedDb(null);
+              }}
+            />
+            <Action
+              title={selectedDb.showTableNamesOnly ? "Show Full Names (Schema.Table)" : "Show Table Names Only"}
               onAction={async () => {
                 const next = !selectedDb.showTableNamesOnly;
                 await updateDatabase(selectedDb.id, { showTableNamesOnly: next });
@@ -226,14 +238,13 @@ export default function Command() {
                 await showToast({
                   style: Toast.Style.Success,
                   title: next ? "Table names only" : "Full names",
-                  message: next ? "Explore Tables will show e.g. YT_CHANNELS" : "Explore Tables will show e.g. public.YT_CHANNELS",
+                  message: next
+                    ? "Explore Tables will show e.g. YT_CHANNELS"
+                    : "Explore Tables will show e.g. public.YT_CHANNELS",
                 });
               }}
             />
-            <Action
-              title="Edit Credentials"
-              onAction={() => setMode("editCredentialsForm")}
-            />
+            <Action title="Edit Credentials" onAction={() => setMode("editCredentialsForm")} />
             <Action
               title="Sync Schema"
               onAction={async () => {
@@ -244,8 +255,12 @@ export default function Command() {
                   await showToast({ style: Toast.Style.Failure, title: "Sync failed", message: result.error });
                 } else {
                   await loadDatabases();
-                  setSelectedDb((prev) => prev ? { ...prev, lastSyncedAt: new Date().toISOString() } : null);
-                  await showToast({ style: Toast.Style.Success, title: "Schema synced", message: `${result.tableCount} tables cached` });
+                  setSelectedDb((prev) => (prev ? { ...prev, lastSyncedAt: new Date().toISOString() } : null));
+                  await showToast({
+                    style: Toast.Style.Success,
+                    title: "Schema synced",
+                    message: `${result.tableCount} tables cached`,
+                  });
                 }
               }}
             />
@@ -259,10 +274,7 @@ export default function Command() {
                 }}
               />
             )}
-            <Action
-              title="Add Exclusion Rule"
-              onAction={() => setMode("addRuleForm")}
-            />
+            <Action title="Add Exclusion Rule" onAction={() => setMode("addRuleForm")} />
             {exclusionRules.map((rule) => (
               <Action
                 key={rule.id}
@@ -310,11 +322,19 @@ export default function Command() {
             <List.Item
               key={db.id}
               title={db.name}
-              subtitle={[DB_TYPE_LABELS[db.type], db.lastSyncedAt ? formatLastSynced(db.lastSyncedAt) : "Never synced"].filter(Boolean).join(" · ")}
+              subtitle={[DB_TYPE_LABELS[db.type], db.lastSyncedAt ? formatLastSynced(db.lastSyncedAt) : "Never synced"]
+                .filter(Boolean)
+                .join(" · ")}
               accessoryTitle={isDefault ? "Default" : undefined}
               actions={
                 <ActionPanel>
-                  <Action title="Open" onAction={() => { setSelectedDb(db); setMode("detail"); }} />
+                  <Action
+                    title="Open"
+                    onAction={() => {
+                      setSelectedDb(db);
+                      setMode("detail");
+                    }}
+                  />
                   <Action title="Add Database" onAction={() => setMode("addForm")} />
                   {!isDefault && (
                     <Action

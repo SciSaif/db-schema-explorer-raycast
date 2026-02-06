@@ -189,4 +189,3 @@ export async function setDefaultDatabase(id: string): Promise<void> {
   const databases = registry.databases.map((d) => ({ ...d, isDefault: d.id === id }));
   writeRegistry({ ...registry, databases, defaultId: id });
 }
-

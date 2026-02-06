@@ -22,9 +22,7 @@ function buildCacheFromDdls(
   return tables;
 }
 
-export async function syncDatabaseSchema(
-  dbId: string,
-): Promise<{ tableCount: number } | { error: string }> {
+export async function syncDatabaseSchema(dbId: string): Promise<{ tableCount: number } | { error: string }> {
   const db = await getDatabase(dbId);
   if (!db?.connectionString?.trim()) {
     return { error: "No connection string set. Edit credentials in Manage Databases." };

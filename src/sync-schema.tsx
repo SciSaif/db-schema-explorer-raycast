@@ -1,12 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  List,
-  showToast,
-  Toast,
-  launchCommand,
-  LaunchType,
-} from "@raycast/api";
+import { Action, ActionPanel, List, showToast, Toast, launchCommand, LaunchType } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { getDatabases, type StoredDatabase } from "./lib/databases";
 import { syncDatabaseSchema } from "./lib/sync-one";
@@ -42,13 +34,19 @@ export default function Command() {
         } else {
           setTableCount(result.tableCount);
           setState("success");
-          await showToast({ style: Toast.Style.Success, title: "Schema synced", message: `${result.tableCount} tables cached` });
+          await showToast({
+            style: Toast.Style.Success,
+            title: "Schema synced",
+            message: `${result.tableCount} tables cached`,
+          });
         }
         return;
       }
       setState("picking");
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const runSync = async (db: StoredDatabase) => {
@@ -62,7 +60,11 @@ export default function Command() {
     } else {
       setTableCount(result.tableCount);
       setState("success");
-      await showToast({ style: Toast.Style.Success, title: "Schema synced", message: `${result.tableCount} tables cached` });
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Schema synced",
+        message: `${result.tableCount} tables cached`,
+      });
     }
   };
 
@@ -114,9 +116,7 @@ export default function Command() {
                 title="Manage Databases"
                 onAction={() => launchCommand({ name: "manage-databases", type: LaunchType.UserInitiated })}
               />
-              {selectedDb && (
-                <Action title="Retry Sync" onAction={() => runSync(selectedDb)} />
-              )}
+              {selectedDb && <Action title="Retry Sync" onAction={() => runSync(selectedDb)} />}
             </ActionPanel>
           }
         />

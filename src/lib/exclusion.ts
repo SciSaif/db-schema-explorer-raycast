@@ -1,7 +1,6 @@
 import { LocalStorage } from "@raycast/api";
 
 const STORAGE_KEY = "exclusionRulesByDb";
-const LEGACY_STORAGE_KEY = "exclusionRules";
 
 export type ExclusionRuleType = "regex" | "contains" | "not_contains";
 

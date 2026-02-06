@@ -1,8 +1,8 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "sql-schema-explorer",
-  "title": "Sql Schema Explorer",
-  "description": "get schema of all the tables in your database",
+  "name": "db-schema-explorer",
+  "title": "DB Schema Explorer",
+  "description": "Get schemas of tables in your database for reference and context for AI",
   "icon": "extension-icon.png",
   "author": "scisaif",
   "platforms": [

@@ -321,7 +321,6 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
             <Action.CopyToClipboard
               title={`Copy Full Schema (${items.length} Tables)`}
               content={fullSchemaDdl}
-              shortcut={{ modifiers: ["cmd", "opt"], key: "c" }}
             />
             {selectedOrderedKeys.length > 0 && (
               <>
@@ -364,16 +363,14 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                       <Action.CopyToClipboard
                         title="Copy DDL"
                         content={entry.ddl}
-                        shortcut={Keyboard.Shortcut.Common.Copy}
-                      />
-                      <Action.CopyToClipboard
-                        title={`Copy Full Schema (${items.length} Tables)`}
-                        content={fullSchemaDdl}
-                        shortcut={{ modifiers: ["cmd", "opt"], key: "c" }}
                       />
                       <Action
                         title={isSelected ? "Remove from Selection" : "Add to Selection"}
                         onAction={() => toggleTableSelection(key)}
+                      />
+                      <Action.CopyToClipboard
+                        title={`Copy Full Schema (${items.length} Tables)`}
+                        content={fullSchemaDdl}
                       />
                       {selectedOrderedKeys.length > 0 && (
                         <>

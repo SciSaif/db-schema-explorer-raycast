@@ -4,17 +4,20 @@ import { writeSchemaCache, type SchemaCache, type TableCacheEntry } from "./cach
 import { parseConnectionConfig } from "./pg-config";
 import { fetchSchemaData } from "./pg-schema";
 import { buildSchemaDdl } from "./ddl-builder";
+import { buildSchemaDbml } from "./dbml-builder";
 import { fetchMongoSchema } from "./mongo-schema";
 
 function buildCacheFromDdls(
   tableDdls: Map<string, string>,
   tableTypes: Map<string, "table" | "view">,
+  tableDbmls?: Map<string, string>,
 ): Record<string, TableCacheEntry> {
   const tables: Record<string, TableCacheEntry> = {};
   for (const [key, ddl] of tableDdls) {
     const [schema] = key.split(".");
     tables[key] = {
       ddl,
+      dbml: tableDbmls?.get(key),
       schema: schema ?? undefined,
       type: tableTypes.get(key) ?? "table",
     };
@@ -48,7 +51,8 @@ export async function syncDatabaseSchema(dbId: string): Promise<{ tableCount: nu
     await client.connect();
     const data = await fetchSchemaData(client);
     const { tableDdls, tableTypes } = buildSchemaDdl(data);
-    const tables = buildCacheFromDdls(tableDdls, tableTypes);
+    const tableDbmls = buildSchemaDbml(data);
+    const tables = buildCacheFromDdls(tableDdls, tableTypes, tableDbmls);
     const cache: SchemaCache = { tables };
     writeSchemaCache(dbId, cache);
     const lastSyncedAt = new Date().toISOString();

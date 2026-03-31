@@ -104,33 +104,43 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
   const activeDb = useMemo(() => databases.find((d) => d.id === activeDbId) ?? null, [databases, activeDbId]);
   const showTableNamesOnly = activeDb?.showTableNamesOnly === true;
 
-  const { selectedOrderedKeys, combinedDdl } = useMemo(() => {
+  const { selectedOrderedKeys, combinedDdl, combinedDbml, selectedDbmlCount } = useMemo(() => {
     const ordered: string[] = [];
     const ddls: string[] = [];
+    const dbmls: string[] = [];
     for (const schema of sortedSchemas) {
       const schemaItems = bySchema.get(schema) ?? [];
       for (const { key, entry } of schemaItems) {
         if (selectedTableKeys.has(key)) {
           ordered.push(key);
           ddls.push(entry.ddl);
+          if (entry.dbml) dbmls.push(entry.dbml);
         }
       }
     }
     return {
       selectedOrderedKeys: ordered,
       combinedDdl: ddls.join("\n\n"),
+      combinedDbml: dbmls.join("\n\n"),
+      selectedDbmlCount: dbmls.length,
     };
   }, [bySchema, sortedSchemas, selectedTableKeys]);
 
-  const fullSchemaDdl = useMemo(() => {
+  const { fullSchemaDdl, fullSchemaDbml, fullSchemaDbmlCount } = useMemo(() => {
     const ddls: string[] = [];
+    const dbmls: string[] = [];
     for (const schema of sortedSchemas) {
       const schemaItems = bySchema.get(schema) ?? [];
       for (const { entry } of schemaItems) {
         ddls.push(entry.ddl);
+        if (entry.dbml) dbmls.push(entry.dbml);
       }
     }
-    return ddls.join("\n\n");
+    return {
+      fullSchemaDdl: ddls.join("\n\n"),
+      fullSchemaDbml: dbmls.join("\n\n"),
+      fullSchemaDbmlCount: dbmls.length,
+    };
   }, [bySchema, sortedSchemas]);
 
   const addAllToSelection = useCallback(() => {
@@ -319,6 +329,12 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
         actions={
           <ActionPanel>
             <Action.CopyToClipboard title={`Copy Full Schema (${items.length} Tables)`} content={fullSchemaDdl} />
+            {fullSchemaDbmlCount > 0 && (
+              <Action.CopyToClipboard
+                title={`Copy Full Schema DBML (${fullSchemaDbmlCount} Tables)`}
+                content={fullSchemaDbml}
+              />
+            )}
             {selectedOrderedKeys.length > 0 && (
               <>
                 <Action.CopyToClipboard
@@ -327,6 +343,12 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                   shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
                   onCopy={clearSelection}
                 />
+                {selectedDbmlCount > 0 && (
+                  <Action.CopyToClipboard
+                    title={`Copy Combined DBML (${selectedDbmlCount} Tables)`}
+                    content={combinedDbml}
+                  />
+                )}
                 <Action title="Clear Selection" onAction={clearSelection} />
               </>
             )}
@@ -362,10 +384,17 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                         title={isSelected ? "Remove from Selection" : "Add to Selection"}
                         onAction={() => toggleTableSelection(key)}
                       />
+                      {entry.dbml && <Action.CopyToClipboard title="Copy DBML" content={entry.dbml} />}
                       <Action.CopyToClipboard
                         title={`Copy Full Schema (${items.length} Tables)`}
                         content={fullSchemaDdl}
                       />
+                      {fullSchemaDbmlCount > 0 && (
+                        <Action.CopyToClipboard
+                          title={`Copy Full Schema DBML (${fullSchemaDbmlCount} Tables)`}
+                          content={fullSchemaDbml}
+                        />
+                      )}
                       {selectedOrderedKeys.length > 0 && (
                         <>
                           <Action.CopyToClipboard
@@ -374,6 +403,12 @@ export default function Command(props: LaunchProps<{ launchContext?: ExploreLaun
                             shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
                             onCopy={clearSelection}
                           />
+                          {selectedDbmlCount > 0 && (
+                            <Action.CopyToClipboard
+                              title={`Copy Combined DBML (${selectedDbmlCount} Tables)`}
+                              content={combinedDbml}
+                            />
+                          )}
                           <Action title="Clear Selection" onAction={clearSelection} />
                         </>
                       )}

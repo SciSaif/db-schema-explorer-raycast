@@ -8,6 +8,7 @@ const OLD_CACHE_FILENAME = "schema-cache.json";
 
 export type TableCacheEntry = {
   ddl: string;
+  dbml?: string;
   schema?: string;
   type: "table" | "view";
 };

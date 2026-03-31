@@ -8,6 +8,7 @@ Get database schema (tables, columns, relations) from PostgreSQL and MongoDB for
 - **Schema Caching**: Fetch and cache database schemas locally for fast access
 - **Table Exploration**: Browse tables organized by schema with search functionality
 - **DDL Export**: Copy individual table DDL or combine multiple tables into a single schema
+- **DBML Export (Postgres)**: Sync and copy DBML for single tables, selected tables, or the full schema
 - **Exclusion Rules**: Filter out unwanted tables using regex, contains, or does-not-contain patterns
 - **Default Database**: Set a default database for quick access
 - **Table Name Display Options**: Show full schema.table names or table names only
@@ -101,12 +102,18 @@ Browse and copy table DDL statements:
    - Click on any table to see its DDL in the detail view
    - The DDL shows the complete table structure including columns, types, constraints, and indexes
 
-3. **Copy DDL**
+3. **Copy DDL / DBML**
    - **Single Table**: Select a table and press Enter or click "Copy DDL"
    - **Multiple Tables**: 
      - Select tables using "Add to Selection" (or ⌘+Click)
      - Press ⌘⇧Enter to copy combined DDL of selected tables
    - **Full Schema**: Use "Copy Full Schema" to copy DDL for all tables
+   - **DBML (Postgres syncs)**:
+     - Use "Copy DBML" for a single table
+     - Use "Copy Combined DBML" for selected tables
+     - Use "Copy Full Schema DBML" for all visible tables
+
+**Note**: DBML is generated and cached during Postgres schema sync. MongoDB sync is unchanged and does not generate DBML.
 
 4. **Bulk Selection**
    - "Add All to Selection": Select all visible tables
